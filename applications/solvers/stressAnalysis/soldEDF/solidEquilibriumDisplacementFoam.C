@@ -78,36 +78,64 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    Info<< "\nCalculating displacement field\n" << endl;
 
-    while (runTime.loop())
-    {
-        Info<< "Iteration: " << runTime.value() << nl << endl;
+    // Use for loop for checking mesh reloading
+    const int count = 2;
+    for (size_t i = 0; i < count; i++) {
+        Info<< "\nCalculating displacement field\n" << i << endl;
 
-        #include "readSteadyStressFoamControls.H"
+        // Try to reset timer before run
+        #include "createTime.H"
 
-        solve
-        (
-            fvm::laplacian(2*mu + lambda, Dcorr, "laplacian(DD,Dcorr)")
-          + fvc::div(sigmaExp + sigmaD)
-        );
 
-        D += accFac*Dcorr;
+//        runTime.setTime(0, 0);
 
+        // Calculate time in loops
+        std::chrono::steady_clock::time_point loop_begin = std::chrono::steady_clock::now();
+
+        while (runTime.loop())
         {
-            volTensorField gradDcorr(fvc::grad(Dcorr));
+            Info<< "Iteration: " << runTime.value() << nl << endl;
 
-            sigmaExp =
-                (lambda - mu)*gradDcorr + mu*gradDcorr.T()
-              + (lambda*I)*tr(gradDcorr);
+            #include "readSteadyStressFoamControls.H"
 
-            sigmaD += accFac*(mu*twoSymm(gradDcorr) + (lambda*I)*tr(gradDcorr));
+            // Change accFactor
+            if (i == 0) {
+                accFac = 2;
+            } else {
+                accFac = 1;
+            }
+            // Check what is accFac
+            Info << "=== accFac is " << accFac << endl;
+
+            solve
+            (
+                fvm::laplacian(2*mu + lambda, Dcorr, "laplacian(DD,Dcorr)")
+              + fvc::div(sigmaExp + sigmaD)
+            );
+
+            D += accFac*Dcorr;
+
+            {
+                volTensorField gradDcorr(fvc::grad(Dcorr));
+
+                sigmaExp =
+                    (lambda - mu)*gradDcorr + mu*gradDcorr.T()
+                  + (lambda*I)*tr(gradDcorr);
+
+                sigmaD += accFac*(mu*twoSymm(gradDcorr) + (lambda*I)*tr(gradDcorr));
+            }
+
+            #include "calculateStress.H"
+            #include "kineticEnergyLimiter.H"
+
+            runTime.printExecutionTime(Info);
         }
 
-        #include "calculateStress.H"
-        #include "kineticEnergyLimiter.H"
+        std::chrono::steady_clock::time_point loop_end = std::chrono::steady_clock::now();
+        std::cout << "=== Loop " << i << " time difference = " <<
+            std::chrono::duration_cast<std::chrono::milliseconds>(loop_end - loop_begin).count() << "[ms]" << std::endl;
 
-        runTime.printExecutionTime(Info);
     }
 
     Info<< "End\n" << endl;
