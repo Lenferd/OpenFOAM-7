@@ -85,4 +85,6 @@ doc/Doxygen/DTAGS
 # Ignore the test directory
 /tutorialsTest
 
+log.linux64GccDPInt32Opt
 .idea
+cmake-build-debug
