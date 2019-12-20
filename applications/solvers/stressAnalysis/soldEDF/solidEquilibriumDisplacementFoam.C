@@ -41,6 +41,9 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
+#include <chrono>
+#include <iostream>
+#include <stdio.h>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -58,8 +61,18 @@ int main(int argc, char *argv[])
 
     #include "addCheckCaseOptions.H"
     #include "setRootCaseLists.H"
+
+    printf("=== Create Time call\n");
     #include "createTime.H"
+
+    // Calculate create mesh time
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    printf("=== Create Mesh call\n");
     #include "createMesh.H"
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+
+    printf("=== Create Control call\n");
     #include "createControls.H"
     #include "createFields.H"
 
