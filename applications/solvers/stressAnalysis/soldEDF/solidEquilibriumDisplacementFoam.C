@@ -82,31 +82,13 @@ int main(int argc, char *argv[])
     // Use for loop for checking mesh reloading
     const int count = 2;
     for (size_t i = 0; i < count; i++) {
-        Info << "\nCalculating displacement field\n" << i << endl;
+        Info<< "\nCalculating displacement field\n" << i << endl;
 
         // Try to reset timer before run
-//        #include "createTime.H"
-//        runTime.setTime(0, 0);
+        #include "createTime.H"
 
-        {
-            // Try to create new mesh?
-            std::cout << regionName << endl;
-            std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-            meshPtr.reset(
-                    new Foam::fvMesh(
-                            Foam::IOobject(
-                                    regionName,
-                                    runTime.timeName(),
-                                    runTime,
-                                    Foam::IOobject::MUST_READ
-                            )
-                    )
-            );
-            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-            std::cout << "=== Create new mesh time difference = "
-                      << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                      << "[ms]" << std::endl;
-        }
+
+//        runTime.setTime(0, 0);
 
         // Calculate time in loops
         std::chrono::steady_clock::time_point loop_begin = std::chrono::steady_clock::now();
