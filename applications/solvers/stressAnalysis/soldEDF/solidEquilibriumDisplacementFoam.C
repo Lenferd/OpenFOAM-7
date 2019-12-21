@@ -85,9 +85,7 @@ int main(int argc, char *argv[])
         Info<< "\nCalculating displacement field\n" << i << endl;
 
         // Try to reset timer before run
-        #include "createTime.H"
-
-
+//        #include "createTime.H"
 //        runTime.setTime(0, 0);
 
         // Calculate time in loops
